@@ -30,11 +30,11 @@ def f_depseudon():
     if len(file_map) == 0 or len(files_to_process) == 0:
         label_info.configure(text="Select both files to process and the mapping file.")
         return
-    label_info.configure(text="Depseudonymizing...")
+    label_info_deps.configure(text="Depseudonymizing...")
     window.update()
     window.update_idletasks()
     depseudon.depseudon(files_to_process, file_map)
-    label_info.configure(text="Complete.")
+    label_info_deps.configure(text="Complete.")
 
 def browseFiles():
     global files_to_process
@@ -42,7 +42,7 @@ def browseFiles():
     files_to_process = fd.askopenfilenames(initialdir=initial_dir,
                                           title="Select a File",
                                           filetypes=(("Documents",
-                                                      "*.txt *.docx"),
+                                                      "*.txt *.docx *.xlsx"),
                                                      ("all files",
                                                       "*.*")))
     basenames = [os.path.basename(fn) for fn in files_to_process]
@@ -60,7 +60,7 @@ def browseFiles_deps():
     files_to_process = fd.askopenfilenames(initialdir=initial_dir,
                                           title="Select a File",
                                           filetypes=(("Documents",
-                                                      "*.txt *.docx"),
+                                                      "*.txt *.docx *xlsx"),
                                                      ("all files",
                                                       "*.*")))
     basenames = [os.path.basename(fn) for fn in files_to_process]

@@ -10,7 +10,6 @@ except:
 
 import os
 from nltk.tag import pos_tag
-from docx import Document
 import nltk
 import sys
 import funcs
@@ -38,7 +37,6 @@ def E17(files, output_dir_name="Pseudon"):
         pos_tags = pos_tag(tokens)
         named_entities = nltk.ne_chunk(pos_tags, binary=True)
         pts.append(named_entities)
-
     def is_name(el):
         if isinstance(el, nltk.tree.tree.Tree):
             return True
@@ -46,8 +44,12 @@ def E17(files, output_dir_name="Pseudon"):
             return True
         else:
             return False
-    proper_nouns_raw = set([el[0] for pt in pts for el in pt if is_name(el)])
-    proper_nouns = [el[0] for el in proper_nouns_raw]
+    def get_token(el):
+        if isinstance(el, nltk.tree.Tree):
+            return el[0][0]
+        else:
+            return el[0]
+    proper_nouns = set([get_token(el) for pt in pts for el in pt if is_name(el)])
 
     #
     # Generate output
@@ -79,15 +81,19 @@ def E17(files, output_dir_name="Pseudon"):
             if tag[0] in proper_nouns and tag[1] == 'NNP':
                 print("Replacing: " + tag[0])
                 tag = (pseudon_dict[tag[0]], tag[1])
+            if ext_mem[iFile-1] == ".xlsx":
+                if tag[0] in ["``", "''"]:
+                    tag = ("\"", tag[1])
             pt_new.append(tag)
         tokens_new = [tag[0] for tag in pt_new]
         txt_new = ' '.join(tokens_new)
-        remove_space_for = ["\'", ",", ".", ":"]
+        remove_space_for = ["\'", ",", ".", ":", "\""]
         for r in remove_space_for:
             txt_new = txt_new.replace(" " + r, r)
-        txt_for_prompt = txt_for_prompt + "\n#####Document " + str(iFile) + "\n" + txt_new
+        print(txt_new)
         fn = out_dir + "/Pseudon" + str(iFile) + ext_mem[iFile - 1]
-        funcs.write_file(fn, txt_for_prompt)
+        funcs.write_file(fn, txt_new)
+        txt_for_prompt = txt_for_prompt + "\n#####Document " + str(iFile) + "\n" + txt_new
         iFile = iFile + 1
 
     out_fn = out_dir + "/PseudonymizedPrompt.txt"
