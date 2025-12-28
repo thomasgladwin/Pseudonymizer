@@ -13,6 +13,7 @@ from nltk.tag import pos_tag
 from docx import Document
 import nltk
 import sys
+import funcs
 
 def E17(files, output_dir_name="Pseudon"):
     #
@@ -23,39 +24,29 @@ def E17(files, output_dir_name="Pseudon"):
 
     txts = []
     pts = []
+    ext_mem = []
     for fn in files:
         print("Reading " + fn)
-        basename, ext = os.path.splitext(fn)
-        if ext == '.docx':
-            f = open(fn, 'rb')
-            document = Document(f)
-            f.close()
-            txt = ''
-            for para in document.paragraphs:
-                try:
-                    txt = txt + para.text
-                except:
-                    pass
-        elif ext == '.txt':
-            with open(fn, 'r', errors='ignore', encoding="utf-8") as f:
-                txt = f.read()
-        else:
-            print('Unknown file type: skipping')
+        txt = funcs.read_file(fn)
+        if txt is None:
+            print("Cannot read " + fn)
             continue
+        basename, ext = os.path.splitext(fn)
+        ext_mem.append(ext)
         txts.append(txt)
         tokens = nltk.word_tokenize(txt)
         pos_tags = pos_tag(tokens)
         named_entities = nltk.ne_chunk(pos_tags, binary=True)
         pts.append(named_entities)
 
-    def id_name(el):
+    def is_name(el):
         if isinstance(el, nltk.tree.tree.Tree):
             return True
         elif el[1] == "NNP":
             return True
         else:
             return False
-    proper_nouns_raw = set([el[0] for pt in pts for el in pt if isinstance(el, nltk.tree.tree.Tree)])
+    proper_nouns_raw = set([el[0] for pt in pts for el in pt if is_name(el)])
     proper_nouns = [el[0] for el in proper_nouns_raw]
 
     #
@@ -95,9 +86,8 @@ def E17(files, output_dir_name="Pseudon"):
         for r in remove_space_for:
             txt_new = txt_new.replace(" " + r, r)
         txt_for_prompt = txt_for_prompt + "\n#####Document " + str(iFile) + "\n" + txt_new
-        document = Document()
-        p = document.add_paragraph(txt_new)
-        document.save(out_dir + "/Pseudon" + str(iFile) + ".docx")
+        fn = out_dir + "/Pseudon" + str(iFile) + ext_mem[iFile - 1]
+        funcs.write_file(fn, txt_for_prompt)
         iFile = iFile + 1
 
     out_fn = out_dir + "/PseudonymizedPrompt.txt"
@@ -111,8 +101,7 @@ def E17(files, output_dir_name="Pseudon"):
     prompt_analysis = prompt_analysis + "Identify and report any respondent features that are associated with differences between the likelihood of codes beng expressed."
     prompt_analysis = prompt_analysis + "Ensure your analyses use all the Documents provided, from first to last. Identity the highest number in the document labels: this is the number of documents. Ensure you generate all requested outputs. Do not use any tool calls: perform the analysis yourself. Do a thorough, academic-style analysis."
     txt_for_prompt = prompt_define + txt_for_prompt + prompt_analysis
-    with open(out_fn, 'w', encoding="utf-8") as f:
-        f.write(txt_for_prompt)
+    funcs.write_file(out_fn, txt_for_prompt)
 
     return out_dir
 
