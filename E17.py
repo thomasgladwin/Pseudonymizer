@@ -1,4 +1,6 @@
 # Prep
+import pandas as pd
+
 try:
     import nltk
     nltk.download('maxent_ne_chunker_tab')
@@ -14,10 +16,15 @@ import nltk
 import sys
 import funcs
 
-def E17(files, output_dir_name="Pseudon"):
+def E17(files, file_replace="", output_dir_name="Pseudon"):
     #
     # Identify proper nouns
     #
+
+    if len(file_replace) > 0:
+        Replace_DF = pd.read_excel(file_replace, header=None)
+    else:
+        Replace_DF = None
 
     dir_name = os.path.dirname(files[0])
 
@@ -30,6 +37,9 @@ def E17(files, output_dir_name="Pseudon"):
         if txt is None:
             print("Cannot read " + fn)
             continue
+        if Replace_DF is not None:
+            for row0 in Replace_DF.iterrows():
+                txt = txt.replace(row0[1][0], row0[1][1])
         basename, ext = os.path.splitext(fn)
         ext_mem.append(ext)
         txts.append(txt)

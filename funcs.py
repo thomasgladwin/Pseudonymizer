@@ -19,7 +19,7 @@ def read_file(fn):
         with open(fn, 'r', errors='ignore', encoding="utf-8") as f:
             txt = f.read()
     elif ext == ".xlsx":
-        DF = pd.read_excel(fn)
+        DF = pd.read_excel(fn, header=None)
         txt = DF.to_json(orient="columns")
     else:
         print('Unknown file type: skipping')

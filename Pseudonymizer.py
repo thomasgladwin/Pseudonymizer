@@ -12,6 +12,7 @@ from ttkthemes import ThemedTk
 
 files_to_process = ()
 file_map = ""
+file_replace = ""
 initial_dir = os.path.dirname(sys.argv[0])
 print(initial_dir)
 
@@ -23,7 +24,7 @@ def f_pseudon():
     window.update()
     window.update_idletasks()
     print(files_to_process)
-    out_dir = E17.E17(files_to_process)
+    out_dir = E17.E17(files_to_process, file_replace)
     label_info.configure(text="Complete.")
 
 def f_depseudon():
@@ -86,6 +87,20 @@ def browseFile():
     label_file_deps.configure(text="File selected: " + basename)
     initial_dir = os.path.dirname(basename)
 
+def browseFile_Replace():
+    global file_replace
+    global initial_dir
+    file_replace = fd.askopenfilename(initialdir=initial_dir,
+                                          title="Select a File",
+                                          filetypes=(("Excel",
+                                                      "*.xlsx"),
+                                                     ("all files",
+                                                      "*.*")))
+    # Change label contents
+    basename = os.path.basename(file_replace)
+    label_file_replace.configure(text="File selected: " + basename)
+    initial_dir = os.path.dirname(basename)
+
 # Create the window
 # window = Tk()
 window = ThemedTk(theme="arc")
@@ -116,6 +131,12 @@ text_files['state'] = 'disabled'
 button_files = Button(tab1,
                         text="Select files to process",
                         command=browseFiles)
+
+button_file_replace = Button(tab1,
+                        text="Manual replacements file (optional)",
+                        command=browseFile_Replace)
+label_file_replace = Label(tab1, text="No file selected yet.", justify="center")
+
 button_pseud = Button(tab1,
                         text="Pseudonymize",
                         command=f_pseudon)
@@ -133,6 +154,8 @@ button_files.grid(column=0, row=iRow, pady=(20, 0)); iRow += 1
 frame_text_files.grid(column=0, row=iRow, padx=(5, 5)); iRow += 1
 text_files.grid(column=0, row=0)
 yscroll.grid(column=1, row=0, sticky = 'ns')
+button_file_replace.grid(column=0, row=iRow, pady=(20, 0)); iRow += 1
+label_file_replace.grid(column=0, row=iRow, pady=(20, 0)); iRow += 1
 button_pseud.grid(column=0, row=iRow, pady=(20, 0)); iRow += 1
 button_exit.grid(column=0, row=iRow, pady=(20, 20)); iRow += 1
 nRows = iRow
